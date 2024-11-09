@@ -18,19 +18,13 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { processDocument, validateMarkdown } from "@/lib/documentProcessors"
+import { processDocument, validateMarkdown, StructureConfig } from "@/lib/documentProcessors"
 import { useState } from "react"
 import { transformToMarkdown } from '@/lib/markdownTransformer';
 import ReactMarkdown from 'react-markdown';
 
-type Config = {
-  headingDepth: number;
-  listStyle: 'bullet' | 'numbered';
-  paragraphSpacing: 'single' | 'double';
-  emphasisStyle: 'asterisk' | 'underscore';
-  codeBlockStyle: 'indented' | 'fenced';
-}
-
+// Define types
+type Config = StructureConfig;
 type ProcessingMode = 'rule-based' | 'ai';
 
 export default function Home() {
@@ -50,14 +44,32 @@ export default function Home() {
     setIsProcessing(true)
     try {
       if (processingMode === 'ai') {
-        const markdown = transformToMarkdown(inputText)
-        setOutputText(markdown)
+        const response = await fetch('/api/convert', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: inputText })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(`API Error: ${data.error}\nDetails: ${data.details || 'No additional details'}`);
+        }
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        
+        setOutputText(data.markdown);
       } else {
         const markdown = processDocument(inputText, config)
         setOutputText(markdown)
       }
-    } catch (error) {
-      console.error('Processing error:', error)
+    } catch (error: any) {
+      console.error('Processing error:', error);
+      setOutputText(`Error: ${error.message || 'Failed to process text'}`);
     } finally {
       setIsProcessing(false)
     }
@@ -99,7 +111,7 @@ export default function Home() {
                   <label className="text-sm font-medium">Header Depth</label>
                   <Slider
                     value={[config.headingDepth]}
-                    onValueChange={(value) => setConfig(prev => ({ ...prev, headingDepth: value[0] }))}
+                    onValueChange={(value) => setConfig((prev: Config) => ({ ...prev, headingDepth: value[0] }))}
                     min={1}
                     max={6}
                     step={1}
