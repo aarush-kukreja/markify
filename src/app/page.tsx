@@ -101,7 +101,7 @@ export default function Home() {
               <div className="space-y-2">
                 <h3 className="font-semibold">2. LLM Enhancement</h3>
                 <p className="text-sm text-muted-foreground">
-                  Next, an LLM refines the structure, improves formatting consistency, and ensures markdown best practices.
+                  Next, an LLM refines the structure, improves formatting consistency, and ensures markdown best practices. Regenerate the markdown until it's perfect.
                 </p>
               </div>
               <div className="space-y-2">
