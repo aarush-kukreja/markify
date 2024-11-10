@@ -42,9 +42,61 @@ export async function POST(request: Request) {
       throw new Error('No response from Groq API');
     }
 
-    return NextResponse.json({ 
-      markdown: chatCompletion.choices[0].message.content 
-    });
+    let markdown = chatCompletion.choices[0].message.content;
+
+    // Final validation and correction step
+    const validateAndCorrect = (original: string, formatted: string): string => {
+      // Split both texts into paragraphs
+      const originalParagraphs = original.split(/\n\s*\n/).map(p => p.trim());
+      const formattedParagraphs = formatted.split(/\n\s*\n/).map(p => p.trim());
+      
+      // Extract markdown formatting patterns
+      const getMarkdownPatterns = (text: string) => {
+        return {
+          headers: text.match(/^#{1,6}\s/gm) || [],
+          bold: text.match(/\*\*[^*]+\*\*/g) || [],
+          italic: text.match(/\*[^*]+\*/g) || [],
+          lists: text.match(/^[-*]\s|^\d+\.\s/gm) || [],
+        };
+      };
+
+      const patterns = getMarkdownPatterns(formatted);
+      
+      // Process each original paragraph
+      const correctedParagraphs = originalParagraphs.map(originalParagraph => {
+        // Find if there's a corresponding formatted paragraph
+        const formattedParagraph = formattedParagraphs.find(fp => 
+          fp.replace(/[#*_`\-\d.]/g, '').trim().includes(
+            originalParagraph.replace(/[#*_`\-\d.]/g, '').trim()
+          )
+        );
+
+        if (formattedParagraph) {
+          return formattedParagraph;
+        } else {
+          // If no matching formatted paragraph, apply basic markdown
+          let corrected = originalParagraph;
+          
+          // Apply header if it looks like a header
+          if (/^[A-Z].*[:.]\s*$/.test(corrected)) {
+            corrected = '## ' + corrected;
+          }
+          
+          // Apply list formatting if it looks like a list item
+          if (/^[-•]\s/.test(corrected)) {
+            corrected = '* ' + corrected.replace(/^[-•]\s/, '');
+          }
+          
+          return corrected;
+        }
+      });
+
+      return correctedParagraphs.join('\n\n');
+    };
+
+    const finalMarkdown = validateAndCorrect(text, markdown);
+
+    return NextResponse.json({ markdown: finalMarkdown });
   } catch (error: any) {
     console.error('API Error:', error);
     return NextResponse.json({ 

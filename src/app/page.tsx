@@ -85,6 +85,35 @@ export default function Home() {
           </p>
         </div>
 
+        <Card>
+          <CardHeader>
+            <CardTitle>How It Works</CardTitle>
+            <CardDescription>Our three-step process for converting text to markdown</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <h3 className="font-semibold">1. ML Pattern Recognition</h3>
+                <p className="text-sm text-muted-foreground">
+                  First, a machine learning model identifies document structure, headers, lists, and formatting patterns in your text.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold">2. LLM Enhancement</h3>
+                <p className="text-sm text-muted-foreground">
+                  Next, an LLM refines the structure, improves formatting consistency, and ensures markdown best practices.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold">3. Final Cleanup</h3>
+                <p className="text-sm text-muted-foreground">
+                  Lastly, we apply your custom formatting rules and validate the markdown for perfect consistency and readability.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="md:col-span-1">
             <CardHeader>
