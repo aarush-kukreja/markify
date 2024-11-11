@@ -26,6 +26,7 @@ import ReactMarkdown from 'react-markdown';
 // Define types
 type Config = StructureConfig;
 type ProcessingMode = 'rule-based' | 'ai';
+type ModelType = 'groq' | 'gemini';
 
 export default function Home() {
   const [inputText, setInputText] = useState("")
@@ -39,6 +40,7 @@ export default function Home() {
   })
   const [processingMode, setProcessingMode] = useState<ProcessingMode>('ai')
   const [isProcessing, setIsProcessing] = useState(false)
+  const [selectedModel, setSelectedModel] = useState<ModelType>('groq')
 
   const handleProcess = async () => {
     setIsProcessing(true)
@@ -49,7 +51,10 @@ export default function Home() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ text: inputText })
+          body: JSON.stringify({ 
+            text: inputText,
+            model: selectedModel 
+          })
         });
         
         const data = await response.json();
@@ -136,6 +141,23 @@ export default function Home() {
                 <CardTitle>Formatting Rules</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
+                {processingMode === 'ai' && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Model</label>
+                    <Select 
+                      value={selectedModel}
+                      onValueChange={(value: ModelType) => setSelectedModel(value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="groq">Llama 3 (via Groq)</SelectItem>
+                        <SelectItem value="gemini">Gemini Pro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Header Depth</label>
                   <Slider
